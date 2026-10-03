@@ -1,0 +1,44 @@
+from pyspark.sql import SparkSession
+import boto3
+from datetime import datetime
+
+# Initialize Spark session
+spark = SparkSession.builder \
+    .appName("DynamoDB Integration") \
+    .getOrCreate()
+
+# Read the CSV file into a DataFrame
+csv_file_path = "/Users/beerendrasingh/Desktop/AWS_Data_Processing/pyspark_aws_dynamodb/emp_details.csv"
+df = spark.read.csv(csv_file_path, header=True)
+
+# Table name
+table_name = "BeeruTable"
+
+# Function to write data to DynamoDB in a single batch
+def write_to_dynamodb_batch(rows):
+    try:
+        # Initialize DynamoDB resource
+        dynamodb = boto3.resource('dynamodb', region_name='eu-west-2')
+        table = dynamodb.Table(table_name)
+
+        # Use batch_writer for batch insertion
+        with table.batch_writer() as batch:
+            for row in rows:
+                batch.put_item(
+                    Item={
+                        "Id": row["ID"],  # Partition key
+                        "Name": row["Name"],
+                        "Age": int(row["Age"]),
+                        "Address": row["Address"],
+                        "CreateDate": datetime.now().isoformat()  # Default system datetime
+                    }
+                )
+        print("Batch insert successful!")
+    except Exception as e:
+        print(f"Error during batch insert: {str(e)}")
+
+# Collect all rows from the DataFrame and write to DynamoDB in a single batch
+rows = df.collect()  # Collect all rows to the driver
+write_to_dynamodb_batch(rows)
+
+print("All data successfully written to DynamoDB in a single batch!")

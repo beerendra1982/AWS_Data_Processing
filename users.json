@@ -1,0 +1,29 @@
+{
+    "users": [
+      {
+        "username": "admin",
+        "password": "pass123",
+        "fullName": "Admin User",
+        "role": "superadmin"
+      },
+      {
+        "username": "alex",
+        "password": "alex123",
+        "fullName": "Admin User",
+        "role": "superadmin"
+      },
+      {
+        "username": "jim",
+        "password": "jim123",
+        "fullName": "Admin User",
+        "role": "superadmin"
+      },
+      {
+        "username": "user1",
+        "password": "hello123",
+        "fullName": "User One",
+        "role": "viewer"
+      }
+    ]
+  }
+  

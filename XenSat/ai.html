@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    // Runs immediately before page loads
+    (function () {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        window.location.replace("home.html");
+        return;
+      }
+
+      try {
+        const decoded = atob(token).split(":");
+        const expiry = parseInt(decoded[1]);
+        const now = Math.floor(Date.now() / 1000);
+
+        if (now >= expiry) {
+          localStorage.removeItem("authToken");
+          window.location.replace("home.html");
+        }
+      } catch (e) {
+        localStorage.removeItem("authToken");
+        window.location.replace("home.html");
+      }
+    })();
+  </script>
+
+  <meta charset="UTF-8" />
+  <title>XenSat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --bg-dark: #050816;
+      --bg-section: #070b1a;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.2);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --card-bg: #0b1020;
+      --border-subtle: #1f2933;
+      --danger: #f97373;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #111827 0, #020617 45%, #000 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* NAVBAR */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 7vw;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(to bottom, rgba(3, 7, 18, 0.95), rgba(3, 7, 18, 0.7), transparent);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 62px;
+      height: 32px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 0, #00e0ff, #0066ff 40%, #050816 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(0,224,255,0.35);
+    }
+
+    .nav-cta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-cta a {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 13px;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .nav-cta a:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    /* HERO */
+    .hero {
+        display: flex; /* Use flexbox for centering */
+        flex-direction: column; /* Stack content vertically */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content horizontally */
+        text-align: center; /* Center-align text */
+        height: calc(100vh - 80px); /* Full viewport height minus navbar */
+        padding: 20px;
+        }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .hero-title {
+        font-size: clamp(24px, 3vw, 36px); /* Adjust font size dynamically */
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden; /* Hide overflow if text exceeds container */
+        text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        text-align: center; /* Center-align the text */
+        }
+
+    .hero-title span {
+      background: linear-gradient(120deg, #38bdf8, #4f46e5, #a855f7);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #4f46e5, #38bdf8);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+      transition: 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .btn-ghost {
+      padding: 9px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .hero-right {
+      position: relative;
+      padding: 18px;
+    }
+
+    .hero-panel {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.95));
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      padding: 16px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+    }
+
+    .hero-panel-main {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 14px;
+      padding: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .hero-panel-main h4 {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .hero-panel-main p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-panel-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+    }
+
+    .hero-panel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .hero-panel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+      margin-right: 6px;
+    }
+
+    /* SECTION */
+    .section {
+      padding: 10px 7vw 40px;
+      background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.9));
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .card-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .architecture-image img {
+        max-width: 60%; /* Reduce the image size */
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.8);
+        margin: 0 auto; /* Center the image */
+        }
+
+    .img-wrapper {
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      overflow: hidden;
+      background: radial-gradient(circle at center, #020617, #020617 40%, #000 100%);
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .img-wrapper img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .placeholder {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .labels {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      max-height: 90px;
+      overflow-y: auto;
+    }
+
+    .labels strong {
+      color: #e5e7eb;
+      font-size: 11px;
+    }
+
+    .label-item {
+      margin-top: 2px;
+    }
+
+    .status {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .status.loading {
+      color: #38bdf8;
+    }
+
+    .status.error {
+      color: #f97373;
+    }
+
+    .status.ok {
+      color: #22c55e;
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 16px 7vw 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(15, 23, 42, 0.9);
+      background: #020617;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="nav-left">
+      <div class="logo-mark" ><a id="arch-link" href="index.html">XenSat</a></div>
+      
+      
+    </div>
+
+    <div class="nav-cta">
+      <a id="login-link" href="login.html">Login</a>
+      <a onclick="logout()">Logout</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <div>
+      <h1 class="hero-title">
+         <span>Satellite AI Image</span> View Response
+      </h1>
+
+      <!-- <p class="hero-subtitle">
+        Trigger independent AWS REST endpoints, visualize their processed imagery,
+        and inspect detected labels in a single, clean interface.
+      </p> -->
+
+      <div class="architecture-image">
+        <!-- Replace 'architecture-diagram.png' with the actual image path -->
+        <img src="assets/ai_satellite_jpg_hd.gif" alt="AI Satellite" />
+      </div>
+
+    </div>
+
+    
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>© 2026 XenSat Demo · Built on AWS</span>
+  </footer>
+
+  <script>
+
+    const apiUrls = [
+      "https://d0qrlo1cgk.execute-api.eu-west-2.amazonaws.com/detect?key=1.png",
+      "https://d0qrlo1cgk.execute-api.eu-west-2.amazonaws.com/detect?key=2.png",
+      "https://d0qrlo1cgk.execute-api.eu-west-2.amazonaws.com/detect?key=3.png",
+      "https://d0qrlo1cgk.execute-api.eu-west-2.amazonaws.com/detect?key=4.png"
+    ];
+
+    async function loadSingleImage(index) {
+
+      document.getElementById("heroStatus").textContent = "Running detection…";
+
+      const card = document.getElementById(`card${index + 1}`);
+      const imgWrapper = card.querySelector(".img-wrapper");
+      const statusEl = document.getElementById(`status${index + 1}`);
+      const labelsEl = document.getElementById(`labels${index + 1}`);
+
+      imgWrapper.innerHTML =
+        "<div class='placeholder'>Loading scene…</div>";
+
+      labelsEl.innerHTML = "";
+
+      statusEl.textContent = "Loading…";
+      statusEl.className = "status loading";
+
+      try {
+
+        const t0 = performance.now();
+
+        const res = await fetch(apiUrls[index]);
+        const data = await res.json();
+
+        const t1 = performance.now();
+
+        console.log(`Scene ${index + 1} response:`, data);
+
+        const imgSrc =
+          `data:${data.content_type};base64,${data.image_base64}`;
+
+        imgWrapper.innerHTML =
+          `<img src="${imgSrc}" alt="Processed Scene ${index + 1}" />`;
+
+        let labelsHtml = "<strong>Detected labels</strong>";
+
+        if (data.labels && data.labels.length) {
+
+          data.labels.forEach(label => {
+
+            labelsHtml += `
+              <div class="label-item">
+                ${label.name} — ${label.confidence}%
+              </div>
+            `;
+
+          });
+
+        } else {
+
+          labelsHtml += `
+            <div class="label-item">
+              No labels returned.
+            </div>
+          `;
+        }
+
+        labelsEl.innerHTML = labelsHtml;
+
+        const latency = (t1 - t0).toFixed(0);
+
+        statusEl.textContent = `OK · ${latency} ms`;
+        statusEl.className = "status ok";
+
+        document.getElementById("heroStatus").textContent = "Completed";
+
+      } catch (err) {
+
+        console.error(`Error loading scene ${index + 1}`, err);
+
+        imgWrapper.innerHTML =
+          "<div class='placeholder'>Failed to load image.</div>";
+
+        labelsEl.innerHTML = "";
+
+        statusEl.textContent = "Error";
+        statusEl.className = "status error";
+
+        document.getElementById("heroStatus").textContent = "Error";
+      }
+    }
+
+    function clearImages() {
+
+      document.getElementById("heroStatus").textContent = "Idle";
+
+      for (let i = 0; i < apiUrls.length; i++) {
+
+        const card = document.getElementById(`card${i + 1}`);
+        const imgWrapper = card.querySelector(".img-wrapper");
+        const statusEl = document.getElementById(`status${i + 1}`);
+        const labelsEl = document.getElementById(`labels${i + 1}`);
+
+        imgWrapper.innerHTML =
+          "<div class='placeholder'>Waiting for detection…</div>";
+
+        labelsEl.innerHTML = "";
+
+        statusEl.textContent = "Idle";
+        statusEl.className = "status";
+      }
+    }
+
+  </script>
+
+  <script>
+
+    function isTokenValid() {
+
+      const token = localStorage.getItem("authToken");
+
+      if (!token) return false;
+
+      try {
+
+        const decoded = atob(token).split(":");
+        const expiry = parseInt(decoded[1]);
+        const now = Math.floor(Date.now() / 1000);
+
+        return now < expiry;
+
+      } catch (e) {
+
+        return false;
+      }
+    }
+
+    window.onload = function () {
+
+      const loginLink = document.getElementById("login-link");
+
+      if (isTokenValid()) {
+        loginLink.style.display = "none";
+      } else {
+        loginLink.style.display = "block";
+      }
+    };
+
+    function logout() {
+
+      localStorage.removeItem("authToken");
+      window.location.href = "home.html";
+    }
+
+  </script>
+
+</body>
+</html>

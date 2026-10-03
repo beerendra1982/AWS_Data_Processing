@@ -1,0 +1,3 @@
+https://s4uozjkyx2.execute-api.eu-west-2.amazonaws.com/prod/empdetails?id=2
+
+https://sqs.eu-west-2.amazonaws.com/371456644911/UpdateAddressQueue
